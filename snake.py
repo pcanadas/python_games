@@ -35,23 +35,22 @@ def message(msg, color):
     dis.blit(mesg, [dis_width / 6, dis_height / 3])
 
 def distance(pos1, pos2):
-    return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])  
+    return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1]) 
 
-def enemy_ai(snake_list, enemy):
+def enemy_ai(snake_list, enemy, move_counter):
     if len(snake_list) > 0:
         target = snake_list[0]  # La cabeza de la serpiente es el objetivo
-        if enemy[0] < target[0]:
-            enemy[0] += snake_block
-        elif enemy[0] > target[0]:
-            enemy[0] -= snake_block
-        if enemy[1] < target[1]:
-            enemy[1] += snake_block
-        elif enemy[1] > target[1]:
-            enemy[1] -= snake_block
         
-        # Asegurarse de que el enemigo no salga de la pantalla
-        enemy[0] = max(0, min(enemy[0], dis_width - snake_block))
-        enemy[1] = max(0, min(enemy[1], dis_height - snake_block))
+        # Solo mover al enemigo cada 2 frames para una velocidad intermedia
+        if move_counter % 2 == 0:
+            if enemy[0] < target[0]:
+                enemy[0] = min(enemy[0] + snake_block, dis_width - snake_block)
+            elif enemy[0] > target[0]:
+                enemy[0] = max(enemy[0] - snake_block, 0)
+            if enemy[1] < target[1]:
+                enemy[1] = min(enemy[1] + snake_block, dis_height - snake_block)
+            elif enemy[1] > target[1]:
+                enemy[1] = max(enemy[1] - snake_block, 0)
 
     return enemy
 
@@ -78,10 +77,14 @@ def gameLoop():
         if distance([x1, y1], enemy) > 100:  # Aseguramos que el enemigo inicie lejos de la serpiente
             break
 
+    move_counter = 0  # Contador para el movimiento del enemigo
+
     while not game_over:
         while game_close == True:
             dis.fill(blue)
-            message("Perdiste!\nPresiona Q para salir o C para jugar otra vez", red)
+            message("Perdiste! Presiona Q para salir o C para jugar otra vez", red)
+            your_score = score_font.render("Tu Score: " + str(Length_of_snake - 1), True, yellow)
+            dis.blit(your_score, [dis_width / 6, dis_height / 3 + 50])  # Mostrar puntaje en la pantalla de fin de juego
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -123,21 +126,23 @@ def gameLoop():
         if len(snake_List) > Length_of_snake:
             del snake_List[0]
 
-        # Comprobar auto-colisión y colisión con el enemigo
-        for segment in snake_List[:-1]:
-            if segment == snake_Head or segment == enemy:
-                game_close = True
-                break
+        # Comprobar colisión con el enemigo y auto-colisión
+        if snake_Head == enemy or snake_Head in snake_List[:-1]:
+            game_close = True
 
-        # Mover al enemigo solo cada pocos frames para reducir su velocidad
-        if random.randint(0, 5) == 0:  # Mueve al enemigo 1/6 de las veces
-            enemy = enemy_ai(snake_List, enemy)
+        # Mover al enemigo
+        move_counter += 1
+        enemy = enemy_ai(snake_List, enemy, move_counter)
 
         # Dibujar juego
         dis.fill(blue)
         pygame.draw.rect(dis, green, [foodx, foody, snake_block, snake_block])
         pygame.draw.rect(dis, red, [enemy[0], enemy[1], snake_block, snake_block])
         our_snake(snake_block, snake_List)
+
+        # Mostrar el score
+        score = score_font.render("Score: " + str(Length_of_snake - 1), True, white)
+        dis.blit(score, [0, 0])  # Aseguramos que el score se dibuje en cada frame
 
         pygame.display.update()
 
@@ -146,10 +151,6 @@ def gameLoop():
             foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
             foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
             Length_of_snake += 1
-
-        # Actualización de la puntuación y otros gráficos
-        score = score_font.render("Score: " + str(Length_of_snake - 1), True, white)
-        dis.blit(score, [0, 0])
 
         clock.tick(snake_speed)
 
