@@ -83,7 +83,7 @@ def gameLoop():
         while game_close == True:
             dis.fill(blue)
             message("Perdiste! Presiona Q para salir o C para jugar otra vez", red)
-            your_score = score_font.render("Tu Score: " + str(Length_of_snake - 1), True, yellow)
+            your_score = score_font.render("Tu Puntuación: " + str(Length_of_snake - 1), True, yellow)
             dis.blit(your_score, [dis_width / 6, dis_height / 3 + 50])  # Mostrar puntaje en la pantalla de fin de juego
             pygame.display.update()
 
@@ -141,7 +141,7 @@ def gameLoop():
         our_snake(snake_block, snake_List)
 
         # Mostrar el score
-        score = score_font.render("Score: " + str(Length_of_snake - 1), True, white)
+        score = score_font.render("Puntuación: " + str(Length_of_snake - 1), True, white)
         dis.blit(score, [0, 0])  # Aseguramos que el score se dibuje en cada frame
 
         pygame.display.update()
