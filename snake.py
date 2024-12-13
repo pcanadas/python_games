@@ -74,7 +74,7 @@ def gameLoop():
     while not game_over:
         while game_close == True:
             dis.fill(blue)
-            message("Perdiste! Presiona Q-Quit o C-Play Again", red)
+            message("Perdiste!\nPresiona Q para salir o C para jugar otra vez", red)
             pygame.display.update()
 
             for event in pygame.event.get():
