@@ -35,7 +35,6 @@ def message(msg, color):
     dis.blit(mesg, [dis_width / 6, dis_height / 3])
 
 def enemy_ai(snake_list, enemy):
-    # La IA del enemigo sigue una estrategia simple de movimiento hacia la serpiente
     if len(snake_list) > 0:
         target = snake_list[0]  # La cabeza de la serpiente es el objetivo
         if enemy[0] < target[0]:
@@ -90,7 +89,18 @@ def gameLoop():
             if event.type == pygame.QUIT:
                 game_over = True
             if event.type == pygame.KEYDOWN:
-                # ... (Movimiento de la serpiente como antes)
+                if event.key == pygame.K_LEFT:
+                    x1_change = -snake_block
+                    y1_change = 0
+                elif event.key == pygame.K_RIGHT:
+                    x1_change = snake_block
+                    y1_change = 0
+                elif event.key == pygame.K_UP:
+                    y1_change = -snake_block
+                    x1_change = 0
+                elif event.key == pygame.K_DOWN:
+                    y1_change = snake_block
+                    x1_change = 0
 
         # Actualizar posición de la serpiente
         x1 += x1_change
@@ -106,14 +116,11 @@ def gameLoop():
         if len(snake_List) > Length_of_snake:
             del snake_List[0]
 
-        # Comprobar auto-colisión
-        for x in snake_List[:-1]:
-            if x == snake_Head:
+        # Comprobar auto-colisión y colisión con el enemigo
+        for segment in snake_List[:-1]:
+            if segment == snake_Head or segment == enemy:
                 game_close = True
-
-        # Comprobar colisión con el enemigo
-        if snake_Head == enemy:
-            game_close = True
+                break
 
         # Mover al enemigo
         enemy = enemy_ai(snake_List, enemy)
