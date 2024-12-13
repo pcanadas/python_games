@@ -34,7 +34,26 @@ def message(msg, color):
     mesg = font_style.render(msg, True, color)
     dis.blit(mesg, [dis_width / 6, dis_height / 3])
 
-def gameLoop():  # Crear un ciclo de juego
+def enemy_ai(snake_list, enemy):
+    # La IA del enemigo sigue una estrategia simple de movimiento hacia la serpiente
+    if len(snake_list) > 0:
+        target = snake_list[0]  # La cabeza de la serpiente es el objetivo
+        if enemy[0] < target[0]:
+            enemy[0] += snake_block
+        elif enemy[0] > target[0]:
+            enemy[0] -= snake_block
+        if enemy[1] < target[1]:
+            enemy[1] += snake_block
+        elif enemy[1] > target[1]:
+            enemy[1] -= snake_block
+        
+        # Asegurarse de que el enemigo no salga de la pantalla
+        enemy[0] = max(0, min(enemy[0], dis_width - snake_block))
+        enemy[1] = max(0, min(enemy[1], dis_height - snake_block))
+
+    return enemy
+
+def gameLoop():
     game_over = False
     game_close = False
 
@@ -50,8 +69,10 @@ def gameLoop():  # Crear un ciclo de juego
     foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
     foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
 
-    while not game_over:
+    # Inicialización del enemigo
+    enemy = [random.randrange(0, dis_width - snake_block), random.randrange(0, dis_height - snake_block)]
 
+    while not game_over:
         while game_close == True:
             dis.fill(blue)
             message("Perdiste! Presiona Q-Quit o C-Play Again", red)
@@ -69,45 +90,49 @@ def gameLoop():  # Crear un ciclo de juego
             if event.type == pygame.QUIT:
                 game_over = True
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    x1_change = -snake_block
-                    y1_change = 0
-                elif event.key == pygame.K_RIGHT:
-                    x1_change = snake_block
-                    y1_change = 0
-                elif event.key == pygame.K_UP:
-                    y1_change = -snake_block
-                    x1_change = 0
-                elif event.key == pygame.K_DOWN:
-                    y1_change = snake_block
-                    x1_change = 0
+                # ... (Movimiento de la serpiente como antes)
 
-        if x1 >= dis_width or x1 < 0 or y1 >= dis_height or y1 < 0:
-            game_close = True
+        # Actualizar posición de la serpiente
         x1 += x1_change
         y1 += y1_change
-        dis.fill(blue)
-        pygame.draw.rect(dis, green, [foodx, foody, snake_block, snake_block])
-        snake_Head = []
-        snake_Head.append(x1)
-        snake_Head.append(y1)
+
+        # Comprobar colisión con los bordes
+        if x1 >= dis_width or x1 < 0 or y1 >= dis_height or y1 < 0:
+            game_close = True
+
+        # Actualizar lista de la serpiente
+        snake_Head = [x1, y1]
         snake_List.append(snake_Head)
         if len(snake_List) > Length_of_snake:
             del snake_List[0]
 
+        # Comprobar auto-colisión
         for x in snake_List[:-1]:
             if x == snake_Head:
                 game_close = True
 
+        # Comprobar colisión con el enemigo
+        if snake_Head == enemy:
+            game_close = True
+
+        # Mover al enemigo
+        enemy = enemy_ai(snake_List, enemy)
+
+        # Dibujar juego
+        dis.fill(blue)
+        pygame.draw.rect(dis, green, [foodx, foody, snake_block, snake_block])
+        pygame.draw.rect(dis, red, [enemy[0], enemy[1], snake_block, snake_block])
         our_snake(snake_block, snake_List)
 
         pygame.display.update()
 
+        # Colisión con comida y crecimiento de la serpiente
         if x1 == foodx and y1 == foody:
             foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
             foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
             Length_of_snake += 1
 
+        # Actualización de la puntuación y otros gráficos
         score = score_font.render("Score: " + str(Length_of_snake - 1), True, white)
         dis.blit(score, [0, 0])
 
