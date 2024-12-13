@@ -34,6 +34,9 @@ def message(msg, color):
     mesg = font_style.render(msg, True, color)
     dis.blit(mesg, [dis_width / 6, dis_height / 3])
 
+def distance(pos1, pos2):
+    return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])  
+
 def enemy_ai(snake_list, enemy):
     if len(snake_list) > 0:
         target = snake_list[0]  # La cabeza de la serpiente es el objetivo
@@ -69,7 +72,11 @@ def gameLoop():
     foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
 
     # Inicialización del enemigo
-    enemy = [random.randrange(0, dis_width - snake_block), random.randrange(0, dis_height - snake_block)]
+    while True:
+        enemy = [round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0, 
+                 round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0]
+        if distance([x1, y1], enemy) > 100:  # Aseguramos que el enemigo inicie lejos de la serpiente
+            break
 
     while not game_over:
         while game_close == True:
@@ -122,8 +129,9 @@ def gameLoop():
                 game_close = True
                 break
 
-        # Mover al enemigo
-        enemy = enemy_ai(snake_List, enemy)
+        # Mover al enemigo solo cada pocos frames para reducir su velocidad
+        if random.randint(0, 5) == 0:  # Mueve al enemigo 1/6 de las veces
+            enemy = enemy_ai(snake_List, enemy)
 
         # Dibujar juego
         dis.fill(blue)
